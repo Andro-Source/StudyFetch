@@ -1,4 +1,4 @@
-# Lecture Downloader 🎓
+# StudyFetch 🎓
 
 A lightweight Chrome Extension designed to intercept HLS streams and convert them into downloadable, progressive MP4 files. Specifically optimized for Kaltura-based lecture podcasts and university media portals.
 
