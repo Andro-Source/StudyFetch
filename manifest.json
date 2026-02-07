@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Lecture Downloader",
   "version": "0.5",
+  "description": "Automatically captures and transforms lecture streams into downloadable MP4 files.",
   "permissions": [
     "declarativeNetRequest",
     "webRequest",

@@ -5,6 +5,7 @@ const statusEl = document.getElementById("status");
 const selectorWrapEl = document.getElementById("selectorWrap");
 const segmentSelectEl = document.getElementById("segmentSelect");
 const downloadBtn = document.getElementById("dlBtn");
+const versionEl = document.getElementById("version");
 
 let activeTab = null;
 let captures = [];
@@ -98,6 +99,9 @@ function renderCandidates() {
 }
 
 async function init() {
+  const manifestVersion = chrome.runtime.getManifest().version;
+  versionEl.textContent = `v${manifestVersion}`;
+
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   activeTab = tabs?.[0] || null;
 
