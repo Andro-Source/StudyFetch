@@ -1,5 +1,7 @@
 const SAVE_AS_DIALOG = true;
 const DEFAULT_BASENAME = "Kaltura_Video";
+const FALLBACK_PREFIX = "video";
+const FALLBACK_TOKEN_LENGTH = 8;
 
 const statusEl = document.getElementById("status");
 const selectorWrapEl = document.getElementById("selectorWrap");
@@ -32,6 +34,42 @@ function sanitizeFilename(value) {
   );
 }
 
+function buildRandomToken(length) {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "";
+  for (let i = 0; i < length; i += 1) {
+    token += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return token;
+}
+
+function buildFallbackTitle() {
+  return `${FALLBACK_PREFIX}-${buildRandomToken(FALLBACK_TOKEN_LENGTH)}`;
+}
+
+function isGenericPageTitle(title) {
+  const normalized = (title || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return (
+    normalized === "media gallery" ||
+    normalized === "media gallery | canvas" ||
+    normalized === "canvas | media gallery"
+  );
+}
+
+function resolveDownloadBaseName(lectureTitle) {
+  const fallbackTitle = buildFallbackTitle();
+  if (!lectureTitle || isGenericPageTitle(lectureTitle)) {
+    return fallbackTitle;
+  }
+
+  const sanitized = sanitizeFilename(lectureTitle);
+  if (!sanitized || sanitized === DEFAULT_BASENAME) {
+    return fallbackTitle;
+  }
+
+  return sanitized;
+}
+
 function getSelectedCapture() {
   const selectedIndex = segmentSelectEl.selectedIndex;
   if (selectedIndex < 0 || selectedIndex >= captures.length) {
@@ -45,10 +83,25 @@ async function getLectureTitle(tabId) {
     const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        const h2 = document.querySelector("#lecture_Panel #LectureHeader h2");
-        if (h2 && h2.textContent) {
-          return h2.textContent.trim();
+        const selectors = [
+          "#span9 #entryTitle h1",
+          "#lecture_Panel #LectureHeader h2",
+        ];
+
+        for (const selector of selectors) {
+          const el = document.querySelector(selector);
+          if (el && el.textContent && el.textContent.trim()) {
+            return el.textContent.trim();
+          }
         }
+
+        const ogTitle = document.querySelector(
+          "meta[property='og:title']",
+        )?.content;
+        if (ogTitle && ogTitle.trim()) {
+          return ogTitle.trim();
+        }
+
         return document.title || "";
       },
     });
@@ -66,11 +119,11 @@ async function downloadSelected() {
     return;
   }
 
-  let downloadUrl = selected.url;
-  let extension = "mp4";
+  const downloadUrl = selected.url;
+  const extension = "mp4";
 
   const lectureTitle = await getLectureTitle(activeTab.id);
-  const safeBase = sanitizeFilename(lectureTitle);
+  const safeBase = resolveDownloadBaseName(lectureTitle);
 
   try {
     await chrome.downloads.download({
