@@ -8,9 +8,11 @@ const selectorWrapEl = document.getElementById("selectorWrap");
 const segmentSelectEl = document.getElementById("segmentSelect");
 const downloadBtn = document.getElementById("dlBtn");
 const versionEl = document.getElementById("version");
+const videoNameEl = document.getElementById("videoName");
 
 let activeTab = null;
 let captures = [];
+let resolvedVideoName = "";
 
 function getCaptureKey(tabId) {
   return `captures:${tabId}`;
@@ -18,6 +20,13 @@ function getCaptureKey(tabId) {
 
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function setVideoName(text) {
+  if (!videoNameEl) {
+    return;
+  }
+  videoNameEl.textContent = `Video name: ${text}`;
 }
 
 function sanitizeFilename(value) {
@@ -56,8 +65,7 @@ function isGenericPageTitle(title) {
   );
 }
 
-function resolveDownloadBaseName(lectureTitle) {
-  const fallbackTitle = buildFallbackTitle();
+function resolveDownloadBaseName(lectureTitle, fallbackTitle) {
   if (!lectureTitle || isGenericPageTitle(lectureTitle)) {
     return fallbackTitle;
   }
@@ -84,8 +92,12 @@ async function getLectureTitle(tabId) {
       target: { tabId },
       func: () => {
         const selectors = [
-          "#span9 #entryTitle h1",
+          "div.span9 h1.entryTitle",
+          ".span9 h1.entryTitle",
           "#lecture_Panel #LectureHeader h2",
+          "h1.page-title",
+          "h1",
+          "[data-testid='title']",
         ];
 
         for (const selector of selectors) {
@@ -112,6 +124,19 @@ async function getLectureTitle(tabId) {
   }
 }
 
+async function resolveAndDisplayVideoName() {
+  if (!activeTab?.id) {
+    resolvedVideoName = buildFallbackTitle();
+    setVideoName(resolvedVideoName);
+    return;
+  }
+
+  const detectedTitle = await getLectureTitle(activeTab.id);
+  const fallbackTitle = buildFallbackTitle();
+  resolvedVideoName = resolveDownloadBaseName(detectedTitle, fallbackTitle);
+  setVideoName(resolvedVideoName);
+}
+
 async function downloadSelected() {
   const selected = getSelectedCapture();
   if (!selected || !activeTab?.id) {
@@ -119,19 +144,20 @@ async function downloadSelected() {
     return;
   }
 
+  if (!resolvedVideoName) {
+    await resolveAndDisplayVideoName();
+  }
+
   const downloadUrl = selected.url;
   const extension = "mp4";
-
-  const lectureTitle = await getLectureTitle(activeTab.id);
-  const safeBase = resolveDownloadBaseName(lectureTitle);
 
   try {
     await chrome.downloads.download({
       url: downloadUrl,
-      filename: `${safeBase}.${extension}`,
+      filename: `${resolvedVideoName}.${extension}`,
       saveAs: SAVE_AS_DIALOG,
     });
-    setStatus(`Download started: ${safeBase}.${extension}`);
+    setStatus(`Download started: ${resolvedVideoName}.${extension}`);
   } catch (error) {
     setStatus("Download failed. Check permissions or candidate validity.");
   }
@@ -173,6 +199,7 @@ async function init() {
   }
 
   renderCandidates();
+  await resolveAndDisplayVideoName();
 }
 
 downloadBtn.addEventListener("click", downloadSelected);
