@@ -1,163 +1,865 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LectureFetch</title>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0f172a;
-        --panel: #111827;
-        --accent: #22d3ee;
-        --accent-strong: #06b6d4;
-        --text: #e2e8f0;
-        --muted: #94a3b8;
-        --ring: rgba(34, 211, 238, 0.35);
+        --backdrop-bg:
+          radial-gradient(
+            120% 90% at 50% -20%,
+            rgba(56, 189, 248, 0.12) 0%,
+            rgba(5, 10, 18, 0) 52%
+          ),
+          rgba(6, 11, 19, 0.55);
+        --shell-bg: linear-gradient(165deg, #101a24 0%, #0f1720 100%);
+        --thumb-bg: linear-gradient(145deg, #0f172a, #020617);
+        --shell-shadow:
+          0 8px 18px rgba(0, 0, 0, 0.24),
+          inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        --text: #f7fbff;
+        --muted: #91acc8;
+        --line: rgba(130, 158, 192, 0.24);
+        --line-soft: rgba(130, 158, 192, 0.15);
+        --surface: rgba(26, 38, 50, 0.9);
+        --surface-soft: rgba(24, 35, 46, 0.75);
+        --surface-lift: #233648;
+        --accent: #137fec;
+        --accent-strong: #0f6ed0;
+        --icon-bg: rgba(19, 127, 236, 0.18);
+        --icon-border: rgba(130, 158, 192, 0.28);
+        --icon-text: #f7fbff;
+        --success: #10b981;
+        --warning: #64748b;
+        --danger: #f87171;
+        --focus: rgba(56, 189, 248, 0.55);
+        --blocked-card-bg: rgba(19, 29, 40, 0.95);
+        --blocked-card-border: rgba(141, 170, 205, 0.3);
+        --blocked-card-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+        --blocked-inline-bg: rgba(12, 19, 28, 0.65);
+        --blocked-inline-border: rgba(141, 170, 205, 0.24);
+        --blocked-input-bg: rgba(22, 34, 47, 0.9);
+        --blocked-input-border: rgba(141, 170, 205, 0.22);
+        --blocked-input-text: rgba(145, 172, 200, 0.9);
+        --blocked-btn-bg: rgba(22, 34, 47, 0.7);
+        --blocked-btn-border: rgba(141, 170, 205, 0.2);
+        --blocked-btn-text: rgba(145, 172, 200, 0.78);
+        --soon-pill-bg: rgba(18, 29, 40, 0.6);
+        --soon-pill-border: rgba(141, 170, 205, 0.28);
+        --soon-pill-text: #b2c6dd;
       }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --backdrop-bg:
+          radial-gradient(
+            120% 90% at 50% -20%,
+            rgba(56, 189, 248, 0.1) 0%,
+            rgba(216, 230, 247, 0) 52%
+          ),
+          rgba(223, 234, 246, 0.7);
+        --shell-bg: linear-gradient(165deg, #f7fbff 0%, #eaf1fb 100%);
+        --thumb-bg: linear-gradient(145deg, #dbe7f5, #cfdced);
+        --shell-shadow:
+          0 8px 18px rgba(78, 101, 133, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        --text: #0b1324;
+        --muted: #4d6488;
+        --line: rgba(78, 97, 123, 0.34);
+        --line-soft: rgba(78, 97, 123, 0.24);
+        --surface: rgba(255, 255, 255, 0.98);
+        --surface-soft: rgba(238, 245, 253, 0.98);
+        --surface-lift: #d9e5f3;
+        --focus: rgba(37, 99, 235, 0.35);
+        --icon-bg: #1d7fe8;
+        --icon-border: rgba(54, 93, 143, 0.3);
+        --icon-text: #ffffff;
+        --blocked-card-bg: rgba(231, 239, 249, 0.95);
+        --blocked-card-border: rgba(114, 134, 161, 0.34);
+        --blocked-card-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          inset 0 -1px 0 rgba(155, 173, 195, 0.2);
+        --blocked-inline-bg: rgba(243, 248, 254, 0.92);
+        --blocked-inline-border: rgba(114, 134, 161, 0.26);
+        --blocked-input-bg: rgba(250, 253, 255, 0.98);
+        --blocked-input-border: rgba(114, 134, 161, 0.3);
+        --blocked-input-text: rgba(83, 105, 133, 0.95);
+        --blocked-btn-bg: rgba(236, 244, 252, 0.96);
+        --blocked-btn-border: rgba(114, 134, 161, 0.28);
+        --blocked-btn-text: rgba(82, 104, 132, 0.84);
+        --soon-pill-bg: rgba(229, 238, 248, 0.95);
+        --soon-pill-border: rgba(114, 134, 161, 0.28);
+        --soon-pill-text: #5a7395;
+      }
+
       * {
         box-sizing: border-box;
       }
+
+      html,
       body {
-        width: 320px;
         margin: 0;
+        padding: 0;
+        background: var(--backdrop-bg);
+        overflow: hidden;
+      }
+
+      body {
+        width: 360px;
+        min-height: 480px;
         font-family:
-          "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
-          Arial, sans-serif;
-        padding: 16px;
-        background:
-          radial-gradient(
-            140% 120% at 0% 0%,
-            rgba(34, 211, 238, 0.12),
-            transparent 55%
-          ),
-          var(--bg);
+          Inter,
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
         color: var(--text);
       }
-      .card {
-        background: linear-gradient(160deg, rgba(15, 23, 42, 0.9), #0b1224);
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: 14px;
+
+      .shell {
+        width: calc(100% - 20px);
+        height: calc(480px - 20px);
+        margin: 10px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: var(--shell-bg);
+        box-shadow: var(--shell-shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
         padding: 16px;
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+        gap: 10px;
       }
-      .title {
-        margin: 0;
-        font-size: 1.05rem;
-        letter-spacing: 0.02em;
+
+      .header {
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between;
+        padding: 0 2px 8px;
+        border-bottom: 1px solid var(--line-soft);
       }
-      .title::before {
-        content: "";
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, var(--accent), #38bdf8);
-        box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .status {
-        margin: 12px 0 14px;
-        font-size: 0.85rem;
-        line-height: 1.35;
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+      }
+
+      .brand-logo {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: 1.07rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .version {
+        margin: 0;
+        font-size: 0.76rem;
+        font-weight: 600;
         color: var(--muted);
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: rgba(15, 23, 42, 0.55);
-        border: 1px dashed rgba(148, 163, 184, 0.25);
       }
-      .field {
+
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        background: var(--surface-lift);
+        border-radius: 10px;
+        padding: 4px;
+      }
+
+      .tab-btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--muted);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .tab-btn[aria-selected="true"] {
+        color: var(--text);
+        background: var(--surface-soft);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
+
+      .tab-btn:focus-visible,
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      .panel {
+        flex: 1;
+        min-height: 0;
+      }
+
+      .panel[hidden] {
+        display: none;
+      }
+
+      .panel-download {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .panel-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .lecture-card {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: var(--surface);
+        padding: 11px;
+      }
+
+      .lecture-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 10px;
       }
-      .field label {
-        display: block;
-        font-size: 0.75rem;
-        color: rgba(226, 232, 240, 0.7);
-        margin-bottom: 6px;
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.67rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--accent);
       }
-      select {
-        width: 100%;
-        border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        background: rgba(15, 23, 42, 0.8);
-        color: var(--text);
-        padding: 10px;
-        font-size: 0.85rem;
+
+      .tag-icon,
+      .status-icon,
+      .empty-icon {
+        font-size: 0.88rem;
+        line-height: 1;
       }
-      .video-name {
-        margin: 6px 0 12px;
-        padding: 8px 10px;
+
+      .status-icon {
+        color: var(--muted);
+      }
+
+      .lecture-body {
+        display: flex;
+        gap: 10px;
+      }
+
+      .lecture-thumb {
+        width: 74px;
+        height: 50px;
         border-radius: 8px;
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        color: rgba(226, 232, 240, 0.88);
-        font-size: 0.78rem;
-        line-height: 1.3;
-        word-break: break-word;
+        border: 1px solid var(--line-soft);
+        background: var(--thumb-bg);
+        color: var(--muted);
+        display: grid;
+        place-items: center;
+        font-size: 0.76rem;
+        font-weight: 700;
+        flex-shrink: 0;
       }
-      button {
+
+      .lecture-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .lecture-main h3 {
+        margin: 0;
+        font-size: 0.88rem;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .lecture-main p {
+        margin: 3px 0 0;
+        font-size: 0.73rem;
+        color: var(--muted);
+      }
+
+      .section-title {
+        margin: 12px 0 8px 1px;
+        font-size: 0.71rem;
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .field {
+        margin: 0;
+      }
+
+      label {
+        display: block;
+        margin: 0 0 7px;
+        font-size: 0.71rem;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      select,
+      input[type="text"] {
+        width: 100%;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        outline: none;
+      }
+
+      select:focus,
+      input[type="text"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px rgba(19, 127, 236, 0.35);
+      }
+
+      .empty-state {
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px 4px;
+      }
+
+      .empty-icon-wrap {
+        width: 66px;
+        height: 66px;
+        border-radius: 999px;
+        border: 1px solid var(--line-soft);
+        background: var(--surface);
+        display: grid;
+        place-items: center;
+        margin-bottom: 8px;
+      }
+
+      .empty-icon {
+        font-size: 1.2rem;
+        color: var(--muted);
+      }
+
+      .empty-title {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .empty-subtitle {
+        margin: 4px 0 0;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .download-footer {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line-soft);
+      }
+
+      .primary-btn {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 12px;
         background: linear-gradient(
           135deg,
           var(--accent),
           var(--accent-strong)
         );
-        color: #0b1120;
-        border: none;
-        padding: 11px 14px;
-        width: 100%;
-        cursor: pointer;
-        border-radius: 10px;
+        color: #fff;
+        font-size: 0.9rem;
         font-weight: 700;
-        letter-spacing: 0.02em;
-        transition:
-          transform 0.12s ease,
-          box-shadow 0.12s ease;
-        box-shadow: 0 10px 18px rgba(34, 211, 238, 0.25);
+        cursor: pointer;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 20px rgba(19, 127, 236, 0.32);
       }
-      button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 24px rgba(34, 211, 238, 0.35);
+
+      :root[data-theme="light"] .primary-btn {
+        box-shadow:
+          0 8px 18px rgba(17, 85, 173, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.28);
       }
-      button:active {
-        transform: translateY(0);
+
+      .primary-btn[disabled] {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        color: var(--muted);
+        box-shadow: none;
+        cursor: not-allowed;
       }
-      button:focus-visible {
-        outline: 2px solid var(--ring);
-        outline-offset: 2px;
-      }
-      .hidden {
-        display: none;
-      }
-      .hint {
-        margin-top: 12px;
+
+      .status {
+        margin: 7px 0 0;
         font-size: 0.72rem;
-        color: rgba(226, 232, 240, 0.55);
+        text-align: center;
+        color: var(--muted);
+        font-weight: 600;
+        min-height: 16px;
       }
-      .version {
-        margin-top: 10px;
-        text-align: right;
-        font-size: 0.68rem;
-        color: rgba(226, 232, 240, 0.45);
+
+      .status::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: 1px;
+        background: var(--success);
+      }
+
+      .status[data-tone="waiting"]::before {
+        background: var(--warning);
+      }
+
+      .status[data-tone="error"]::before {
+        background: var(--danger);
+      }
+
+      .panel-settings {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .settings-section {
+        margin: 0;
+      }
+
+      .settings-title {
+        margin: 0 0 4px;
+        font-size: 0.66rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 650;
+      }
+
+      .settings-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+        padding: 7px;
+      }
+
+      .settings-card.custom-sites-blocked {
+        background: var(--blocked-card-bg);
+        border-color: var(--blocked-card-border);
+        box-shadow: var(--blocked-card-shadow);
+      }
+
+      .settings-card.custom-sites-blocked .inline-field {
+        padding: 6px;
+        border-radius: 9px;
+        border: 1px solid var(--blocked-inline-border);
+        background: var(--blocked-inline-bg);
+      }
+
+      .theme-segment {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 3px;
+        padding: 3px;
+        border-radius: 9px;
+        background: var(--surface-lift);
+      }
+
+      .theme-btn {
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.74rem;
+        font-weight: 600;
+        padding: 6px 6px;
+        cursor: pointer;
+      }
+
+      .theme-btn[aria-pressed="true"] {
+        background: var(--surface-soft);
+        color: var(--text);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+      }
+
+      .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        border: 0 !important;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin: 0;
+      }
+
+      .stat {
+        border: 1px solid var(--line-soft);
+        border-radius: 9px;
+        padding: 6px;
+        text-align: center;
+      }
+
+      .stat dt {
+        margin: 0 0 2px;
+        font-size: 0.56rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .stat dd {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .inline-field {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+
+      .add-btn,
+      .delete-btn {
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        color: var(--text);
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .add-btn {
+        padding: 0 8px;
+      }
+
+      .settings-card.custom-sites-blocked #customSiteInput {
+        border-color: var(--blocked-input-border);
+        background: var(--blocked-input-bg);
+        color: var(--blocked-input-text);
+      }
+
+      .settings-card.custom-sites-blocked #addCustomSiteBtn {
+        border-color: var(--blocked-btn-border);
+        background: var(--blocked-btn-bg);
+        color: var(--blocked-btn-text);
+      }
+
+      .settings-card.custom-sites-blocked #customSiteInput:disabled,
+      .settings-card.custom-sites-blocked #addCustomSiteBtn:disabled {
+        cursor: not-allowed;
+        opacity: 0.85;
+      }
+
+      .soon-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 7px;
+        padding: 4px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--soon-pill-border);
+        background: var(--soon-pill-bg);
+        color: var(--soon-pill-text);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .site-list {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+        max-height: 54px;
+        overflow: hidden;
+      }
+
+      .site-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      .site-item:last-child {
+        border-bottom: 0;
+      }
+
+      .site-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .site-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .site-name {
+        font-size: 0.72rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .delete-btn {
+        padding: 3px 6px;
+        color: var(--danger);
+      }
+
+      .site-help {
+        margin: 5px 0 0;
+        font-size: 0.64rem;
+        color: var(--muted);
+        line-height: 1.15;
+      }
+
+      .hidden {
+        display: none !important;
       }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h3 class="title">Lecture Downloader</h3>
-      <div id="status" class="status">
-        No stream candidates detected yet. Play the lecture first.
-      </div>
-      <div id="selectorWrap" class="hidden">
-        <div class="field">
-          <label for="segmentSelect">Choose stream candidate</label>
-          <select id="segmentSelect"></select>
+    <main class="shell">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">
+            <img
+              src="icons/icon.png"
+              alt="LectureFetch logo"
+              class="brand-logo"
+            />
+          </div>
+          <h1 class="brand-title">LectureFetch</h1>
         </div>
-        <div id="videoName" class="video-name">Video name: detecting...</div>
-        <button id="dlBtn">Download MP4</button>
+        <p id="version" class="version"></p>
+      </header>
+
+      <div class="tabs" role="tablist" aria-label="Popup sections">
+        <button
+          id="tabDownload"
+          class="tab-btn"
+          type="button"
+          role="tab"
+          aria-controls="panelDownload"
+          aria-selected="true"
+        >
+          Download
+        </button>
+        <button
+          id="tabSettings"
+          class="tab-btn"
+          type="button"
+          role="tab"
+          aria-controls="panelSettings"
+          aria-selected="false"
+        >
+          Settings
+        </button>
       </div>
-      <div class="hint">
-        Tip: each entry is one unique captured stream candidate.
-      </div>
-      <div id="version" class="version"></div>
-    </div>
+
+      <section id="panelDownload" class="panel panel-download" role="tabpanel">
+        <div class="panel-scroll">
+          <div id="downloadReadyContent">
+            <article class="lecture-card">
+              <div class="lecture-head">
+                <span class="tag"> Detected Lecture </span>
+              </div>
+              <div class="lecture-body">
+                <div class="lecture-thumb">PREVIEW</div>
+                <div class="lecture-main">
+                  <h3 id="videoName">Detecting lecture...</h3>
+                  <p>Lecture Name</p>
+                </div>
+              </div>
+            </article>
+
+            <p class="section-title">Stream Candidates</p>
+            <div id="selectorWrap" class="field hidden">
+              <label for="segmentSelect">Choose stream candidate</label>
+              <select
+                id="segmentSelect"
+                aria-label="Stream candidates"
+              ></select>
+            </div>
+          </div>
+
+          <div id="emptyState" class="empty-state hidden" aria-live="polite">
+            <div class="empty-icon-wrap">
+              <span class="empty-icon">?</span>
+            </div>
+            <h2 class="empty-title">No stream candidates detected yet.</h2>
+            <p class="empty-subtitle">Play the lecture first.</p>
+          </div>
+        </div>
+
+        <div class="download-footer">
+          <button id="dlBtn" class="primary-btn" type="button">
+            <span>Download Lecture</span>
+          </button>
+          <p id="status" class="status" data-tone="waiting">
+            Waiting for video
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="panelSettings"
+        class="panel panel-settings"
+        role="tabpanel"
+        hidden
+      >
+        <div class="settings-section">
+          <h3 class="settings-title">Appearance</h3>
+          <div class="settings-card">
+            <label class="settings-title" for="themeSelect">Theme</label>
+            <div
+              id="themeSegment"
+              class="theme-segment"
+              role="group"
+              aria-label="Theme"
+            >
+              <button
+                id="themeSystemBtn"
+                class="theme-btn"
+                type="button"
+                data-theme-value="system"
+                aria-pressed="true"
+              >
+                System
+              </button>
+              <button
+                id="themeLightBtn"
+                class="theme-btn"
+                type="button"
+                data-theme-value="light"
+                aria-pressed="false"
+              >
+                Light
+              </button>
+              <button
+                id="themeDarkBtn"
+                class="theme-btn"
+                type="button"
+                data-theme-value="dark"
+                aria-pressed="false"
+              >
+                Dark
+              </button>
+            </div>
+            <select
+              id="themeSelect"
+              class="visually-hidden"
+              aria-hidden="true"
+              tabindex="-1"
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-title">Usage Statistics</h3>
+          <div class="settings-card">
+            <dl class="stats-grid">
+              <div class="stat">
+                <dt>Lectures</dt>
+                <dd id="downloadCount">0</dd>
+              </div>
+              <div class="stat">
+                <dt>Last</dt>
+                <dd id="lastDownloadAt">Never</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-title">Custom Sites</h3>
+          <div class="settings-card custom-sites-blocked" aria-disabled="true">
+            <div class="inline-field">
+              <input
+                id="customSiteInput"
+                type="text"
+                placeholder="example.com"
+                autocomplete="off"
+                spellcheck="false"
+                disabled
+              />
+              <button
+                id="addCustomSiteBtn"
+                class="add-btn"
+                type="button"
+                disabled
+              >
+                Add
+              </button>
+            </div>
+            <ul id="customSitesList" class="site-list hidden"></ul>
+            <p id="customSitesEmpty" class="site-help">
+              Custom Sites support coming soon
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
 
     <script src="popup.js"></script>
   </body>
