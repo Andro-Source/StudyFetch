@@ -49,6 +49,18 @@ Once the extension detects a valid media stream:
 
 ---
 
+## 🛑 Disclaimer
+
+This extension is intended for lawful, personal, and educational use only. Users are solely responsible for ensuring that their use of this extension complies with all applicable laws, university policies, and the terms of service of the platforms they access.
+
+The developer does not condone or support the unauthorized distribution, reproduction, or sharing of copyrighted materials.
+
+By using this extension, you acknowledge that you assume all responsibility and risk associated with its use, including any academic, disciplinary, civil, or criminal consequences that may result from misuse.
+
+The developer is not liable for any damages, penalties, network restrictions, disciplinary actions, or other consequences arising from the use or misuse of this software.
+
+---
+
 ## 🛠 Troubleshooting
 
 - **No icon appears:** Refresh the page and ensure the video starts playing. Some players require a few seconds of playback before they request the stream segments.
