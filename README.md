@@ -1,6 +1,6 @@
 # LectureFetch 🎓
 
-A lightweight Chrome Extension designed to intercept HLS streams and convert them into downloadable, progressive MP4 files. Specifically optimized for Kaltura-based lecture podcasts and university media portals.
+A lightweight Chrome Extension designed to transform streams and convert them into downloadable MP4 files. Specifically designed for Kaltura-based lecture podcasts and university media portals.
 
 ## 🚀 Installation
 
@@ -17,7 +17,7 @@ Since this extension is in developer mode, follow these steps to install it:
     - Click the **Load unpacked** button in the top-left.
     - Select the folder where you unzipped the extension files.
 5.  **Pin for Access:**
-    - Click the "Puzzle" icon in your Chrome toolbar and pin **Lecture Downloader** for easy access.
+    - Click the "Puzzle" icon in your Chrome toolbar and pin **LectureFetch** for easy access.
 
 ---
 
