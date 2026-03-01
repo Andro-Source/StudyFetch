@@ -14,7 +14,7 @@ function clearTabCaptures(tabId) {
 function buildPreviewLabel(sourceUrl, index) {
   const flavorMatch = sourceUrl.match(/\/flavorId\/([^/]+)/i);
   if (flavorMatch) {
-    return `Flavor ${flavorMatch[1]}`;
+    return `${flavorMatch[1]}`;
   }
 
   const nameMatch = sourceUrl.match(/\/name\/([^/]+)/i);
@@ -101,7 +101,9 @@ function storeCapture(targetTabId, downloadUrl, sourceUrl) {
   const candidateKey = captureIdentity(downloadUrl);
 
   chrome.storage.local.get([captureKey], (result) => {
-    const captures = Array.isArray(result[captureKey]) ? result[captureKey] : [];
+    const captures = Array.isArray(result[captureKey])
+      ? result[captureKey]
+      : [];
     const exists = captures.some(
       (item) => captureIdentity(item.url) === candidateKey,
     );

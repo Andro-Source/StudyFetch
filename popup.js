@@ -15,6 +15,7 @@ const selectorWrapEl = document.getElementById("selectorWrap");
 const segmentSelectEl = document.getElementById("segmentSelect");
 const downloadBtn =
   document.getElementById("dlBtn") || document.getElementById("debt");
+const copyLinkBtn = document.getElementById("copyLinkBtn");
 const versionEl = document.getElementById("version");
 const videoNameEl = document.getElementById("videoName");
 const tabDownloadEl = document.getElementById("tabDownload");
@@ -37,6 +38,7 @@ let themePreference = DEFAULT_THEME;
 let downloadCount = 0;
 let lastDownloadAt = null;
 let activePanel = "download";
+let currentVideoUrl = "";
 
 const prefersDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -55,7 +57,26 @@ function setVideoName(text) {
   if (!videoNameEl) {
     return;
   }
-  videoNameEl.textContent = text || "Detecting lecture...";
+
+  const nextText = text || "Detecting lecture...";
+  if ("value" in videoNameEl) {
+    videoNameEl.value = nextText;
+    return;
+  }
+
+  videoNameEl.textContent = nextText;
+}
+
+function getVideoNameInputValue() {
+  if (!videoNameEl) {
+    return "";
+  }
+
+  if ("value" in videoNameEl) {
+    return videoNameEl.value.trim();
+  }
+
+  return (videoNameEl.textContent || "").trim();
 }
 
 function sanitizeFilename(value) {
@@ -216,6 +237,26 @@ function getSelectedCapture() {
   return captures[selectedIndex];
 }
 
+function updateActionButtonsState(hasCandidates = captures.length > 0) {
+  if (downloadBtn) {
+    downloadBtn.disabled = !hasCandidates;
+  }
+  if (copyLinkBtn) {
+    copyLinkBtn.disabled = !hasCandidates || !currentVideoUrl;
+  }
+}
+
+function setCurrentVideoUrl(nextUrl) {
+  currentVideoUrl = typeof nextUrl === "string" ? nextUrl.trim() : "";
+  updateActionButtonsState();
+}
+
+function syncSelectedCaptureState() {
+  const selected = getSelectedCapture();
+  setCurrentVideoUrl(selected?.url || "");
+  return selected;
+}
+
 async function getLectureTitle(tabId) {
   try {
     const results = await chrome.scripting.executeScript({
@@ -261,8 +302,8 @@ async function resolveAndDisplayVideoName() {
 }
 
 async function downloadSelected() {
-  const selected = getSelectedCapture();
-  if (!selected || !activeTab?.id) {
+  const selected = syncSelectedCaptureState();
+  if (!selected || !activeTab?.id || !currentVideoUrl) {
     setStatus("No stream candidate available for download.", "error");
     return;
   }
@@ -271,20 +312,83 @@ async function downloadSelected() {
     await resolveAndDisplayVideoName();
   }
 
-  const downloadUrl = selected.url;
+  const typedVideoName = getVideoNameInputValue();
+  const finalVideoName = sanitizeFilename(typedVideoName || resolvedVideoName);
+  resolvedVideoName = finalVideoName;
+  setVideoName(finalVideoName);
+
+  const downloadUrl = currentVideoUrl;
   const extension = "mp4";
 
   try {
     await chrome.downloads.download({
       url: downloadUrl,
-      filename: `${resolvedVideoName}.${extension}`,
+      filename: `${finalVideoName}.${extension}`,
       saveAs: SAVE_AS_DIALOG,
     });
     await recordDownloadSuccess();
-    setStatus(`Download started: ${resolvedVideoName}.${extension}`, "success");
+    setStatus(`Download started: ${finalVideoName}.${extension}`, "success");
   } catch (error) {
-    setStatus("Download failed. Check permissions or candidate validity.", "error");
+    setStatus(
+      "Download failed. Check permissions or candidate validity.",
+      "error",
+    );
   }
+}
+
+function isManifestStreamUrl(url) {
+  return /(\.m3u8(\?|$)|\.mpd(\?|$)|\/dash\/)/i.test(url || "");
+}
+
+async function copyTextToClipboard(text) {
+  if (!text) {
+    return false;
+  }
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (error) {
+      // Fallback below.
+    }
+  }
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.pointerEvents = "none";
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return copied;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function copyCurrentLink() {
+  if (!currentVideoUrl) {
+    return;
+  }
+
+  const copied = await copyTextToClipboard(currentVideoUrl);
+  if (!copied) {
+    setStatus("Copy failed", "error");
+    return;
+  }
+
+  if (isManifestStreamUrl(currentVideoUrl)) {
+    setStatus("Copied stream link", "success");
+    return;
+  }
+
+  setStatus("Copied MP4 link", "success");
 }
 
 function setDownloadContentState(hasCandidates) {
@@ -294,9 +398,7 @@ function setDownloadContentState(hasCandidates) {
   if (emptyStateEl) {
     emptyStateEl.classList.toggle("hidden", hasCandidates);
   }
-  if (downloadBtn) {
-    downloadBtn.disabled = !hasCandidates;
-  }
+  updateActionButtonsState(hasCandidates);
 }
 
 function renderCandidates() {
@@ -308,6 +410,8 @@ function renderCandidates() {
     option.textContent = `${idx + 1}. ${typeTag} ${item.label}`;
     segmentSelectEl.appendChild(option);
   });
+  segmentSelectEl.selectedIndex = captures.length ? 0 : -1;
+  syncSelectedCaptureState();
 
   if (selectorWrapEl) {
     selectorWrapEl.classList.remove("hidden");
@@ -317,6 +421,7 @@ function renderCandidates() {
 }
 
 function showNoCandidatesState() {
+  setCurrentVideoUrl("");
   setDownloadContentState(false);
   if (selectorWrapEl) {
     selectorWrapEl.classList.add("hidden");
@@ -345,6 +450,14 @@ async function loadSettingsState() {
 function registerUIEvents() {
   if (downloadBtn) {
     downloadBtn.addEventListener("click", downloadSelected);
+  }
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener("click", copyCurrentLink);
+  }
+  if (segmentSelectEl) {
+    segmentSelectEl.addEventListener("change", () => {
+      syncSelectedCaptureState();
+    });
   }
 
   if (tabDownloadEl) {
@@ -412,7 +525,7 @@ async function init() {
   captures = Array.isArray(result[key]) ? result[key] : [];
 
   if (!captures.length) {
-    setStatus("No stream candidates detected yet. Play the lecture first.", "waiting");
+    setStatus("No stream candidates detected yet", "waiting");
     showNoCandidatesState();
     return;
   }

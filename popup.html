@@ -51,6 +51,9 @@
         --soon-pill-bg: rgba(18, 29, 40, 0.6);
         --soon-pill-border: rgba(141, 170, 205, 0.28);
         --soon-pill-text: #b2c6dd;
+        --lecture-name-bg: rgba(20, 33, 47, 0.98);
+        --lecture-name-border: rgba(94, 140, 198, 0.58);
+        --lecture-name-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
       }
 
       :root[data-theme="light"] {
@@ -94,6 +97,9 @@
         --soon-pill-bg: rgba(229, 238, 248, 0.95);
         --soon-pill-border: rgba(114, 134, 161, 0.28);
         --soon-pill-text: #5a7395;
+        --lecture-name-bg: rgba(240, 247, 255, 1);
+        --lecture-name-border: rgba(93, 128, 173, 0.5);
+        --lecture-name-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
 
       * {
@@ -299,6 +305,18 @@
         line-height: 1.25;
       }
 
+      .lecture-name-input {
+        width: 100%;
+        border: 2px solid var(--line-soft);
+        border-radius: 8px;
+        background: var(--surface-bg);
+        color: var(--text);
+        padding: 7px 9px;
+        font-size: 0.86rem;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
       .lecture-main p {
         margin: 3px 0 0;
         font-size: 0.73rem;
@@ -346,6 +364,12 @@
         box-shadow: 0 0 0 1px rgba(19, 127, 236, 0.35);
       }
 
+      .lecture-main .lecture-name-input {
+        background: var(--lecture-name-bg);
+        border-color: var(--lecture-name-border);
+        box-shadow: var(--lecture-name-shadow);
+      }
+
       .empty-state {
         min-height: 190px;
         display: flex;
@@ -390,8 +414,15 @@
         border-top: 1px solid var(--line-soft);
       }
 
+      .action-row {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+      }
+
       .primary-btn {
         width: 100%;
+        flex: 1 1 auto;
         border: 0;
         border-radius: 12px;
         padding: 11px 12px;
@@ -423,6 +454,33 @@
         color: var(--muted);
         box-shadow: none;
         cursor: not-allowed;
+      }
+
+      .secondary-btn {
+        flex: 0 0 calc((100% - 8px) / 6);
+        min-width: 44px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 12px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .secondary-btn[disabled] {
+        background: var(--surface);
+        border-color: var(--line-soft);
+        color: var(--muted);
+        cursor: not-allowed;
+      }
+
+      .link-icon {
+        line-height: 1;
       }
 
       .status {
@@ -723,8 +781,15 @@
               <div class="lecture-body">
                 <div class="lecture-thumb">PREVIEW</div>
                 <div class="lecture-main">
-                  <h3 id="videoName">Detecting lecture...</h3>
-                  <p>Lecture Name</p>
+                  <label for="videoName">Lecture Name</label>
+                  <input
+                    id="videoName"
+                    class="lecture-name-input"
+                    type="text"
+                    value="Detecting lecture..."
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
                 </div>
               </div>
             </article>
@@ -743,15 +808,27 @@
             <div class="empty-icon-wrap">
               <span class="empty-icon">?</span>
             </div>
-            <h2 class="empty-title">No stream candidates detected yet.</h2>
-            <p class="empty-subtitle">Play the lecture first.</p>
+            <h2 class="empty-title">No stream candidates detected yet</h2>
+            <p class="empty-subtitle">Play the lecture first</p>
           </div>
         </div>
 
         <div class="download-footer">
-          <button id="dlBtn" class="primary-btn" type="button">
-            <span>Download Lecture</span>
-          </button>
+          <div class="action-row">
+            <button id="dlBtn" class="primary-btn" type="button">
+              <span>Download Lecture</span>
+            </button>
+            <button
+              id="copyLinkBtn"
+              class="secondary-btn"
+              type="button"
+              aria-label="Copy MP4 Link"
+              title="Copy MP4 Link"
+              disabled
+            >
+              <span class="link-icon" aria-hidden="true">🔗</span>
+            </button>
+          </div>
           <p id="status" class="status" data-tone="waiting">
             Waiting for video
           </p>
